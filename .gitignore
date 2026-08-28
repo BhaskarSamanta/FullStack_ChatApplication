@@ -1,0 +1,4 @@
+backend/.idea/
+backend/chat_application/src/main/resources/application.properties
+.env
+
