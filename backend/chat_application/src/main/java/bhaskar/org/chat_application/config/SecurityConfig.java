@@ -23,7 +23,8 @@ public class SecurityConfig {
                 .authorizeHttpRequests(auth -> auth
                         .requestMatchers(
                                 "/api/auth/signup",
-                                "/api/auth/verify-otp"
+                                "/api/auth/verify-otp",
+                                "/api/auth/resend-otp"
                         ).permitAll()
                         .anyRequest().authenticated()
                 );

@@ -43,23 +43,23 @@ public class OtpService {
     }
 
     @Transactional
-    public boolean verifyOtp(User user, String enteredOtp){
+    public OtpVerificationStatus verifyOtp(User user, String enteredOtp){
         OtpVerification otpVerification = otpVerificationRepository
                 .findByUser(user)
                 .orElse(null);
 
         if(otpVerification == null){
-            return false;
+            return OtpVerificationStatus.OTP_NOT_FOUND;
         }
 
         if(LocalDateTime.now().isAfter(otpVerification.getExpiresAt())){
             otpVerificationRepository.delete(otpVerification);
-            return false;
+            return OtpVerificationStatus.OTP_EXPIRED;
         }
 
         if(otpVerification.getAttempts() >= MAX_ATTEMPTS){
             otpVerificationRepository.delete(otpVerification);
-            return false;
+            return OtpVerificationStatus.MAX_ATTEMPTS_EXCEEDED;
         }
 
         boolean otpMatches = passwordEncoder.matches(enteredOtp,otpVerification.getOtpHash());
@@ -69,12 +69,14 @@ public class OtpService {
 
             if(otpVerification.getAttempts() >= MAX_ATTEMPTS){
                 otpVerificationRepository.delete(otpVerification);
+                return OtpVerificationStatus.MAX_ATTEMPTS_EXCEEDED;
             }
-            return false;
+            otpVerificationRepository.save(otpVerification);
+            return OtpVerificationStatus.INVALID_OTP;
         }
 
         otpVerificationRepository.delete(otpVerification);
-        return true;
+        return OtpVerificationStatus.SUCCESS;
 
     }
 

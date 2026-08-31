@@ -1,8 +1,10 @@
 package bhaskar.org.chat_application.controller;
 
+import bhaskar.org.chat_application.dto.ResendOtpDto;
 import bhaskar.org.chat_application.dto.SignupDto;
 import bhaskar.org.chat_application.dto.VerifyOtpDto;
 import bhaskar.org.chat_application.service.AuthService;
+import bhaskar.org.chat_application.service.OtpVerificationStatus;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
@@ -27,12 +29,31 @@ public class AuthController {
 
     @PostMapping("/verify-otp")
     public ResponseEntity<String> verifyEmail(@Valid @RequestBody VerifyOtpDto verifyOtpDto){
-        boolean isVerified = authService.verifyEmail(verifyOtpDto);
-        if(!isVerified){
-            return ResponseEntity.badRequest().body("Invalid OTP or email already verified");
-        }
-
-        return ResponseEntity.status(HttpStatus.OK).body("Email verified successfully");
+        OtpVerificationStatus isVerified = authService.verifyEmail(verifyOtpDto);
+        return switch (isVerified) {
+            case SUCCESS -> ResponseEntity.status(HttpStatus.OK).body(
+                    "Email verified Successfully"
+            );
+            case OTP_EXPIRED -> ResponseEntity.status(HttpStatus.BAD_REQUEST).body(
+                    "Otp has expired please try with a new otp"
+            );
+            case INVALID_OTP -> ResponseEntity.status(HttpStatus.BAD_REQUEST).body(
+                    "Invalid OTP please try again"
+            );
+            case MAX_ATTEMPTS_EXCEEDED -> ResponseEntity.status(HttpStatus.BAD_REQUEST).body(
+                    "Maximum OTP attempts reached please try again with a new OTP."
+            );
+            case OTP_NOT_FOUND -> ResponseEntity.status(HttpStatus.BAD_REQUEST).body(
+                    "Otp not found please request a new otp"
+            );
+            default -> ResponseEntity.status(HttpStatus.BAD_REQUEST).body(
+                    "Otp verification failed due to unexpected error"
+            );
+        };
     }
 
+    @PostMapping("/resend-otp")
+    public ResponseEntity<String> resendOtp(@Valid @RequestBody ResendOtpDto resendOtpDto){
+        return ResponseEntity.status(HttpStatus.OK).body(authService.resendOtp(resendOtpDto.getEmail()));
+    }
 }
