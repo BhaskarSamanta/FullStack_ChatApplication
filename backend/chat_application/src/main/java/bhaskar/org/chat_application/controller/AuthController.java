@@ -1,8 +1,6 @@
 package bhaskar.org.chat_application.controller;
 
-import bhaskar.org.chat_application.dto.ResendOtpDto;
-import bhaskar.org.chat_application.dto.SignupDto;
-import bhaskar.org.chat_application.dto.VerifyOtpDto;
+import bhaskar.org.chat_application.dto.*;
 import bhaskar.org.chat_application.service.AuthService;
 import bhaskar.org.chat_application.service.OtpVerificationStatus;
 import jakarta.validation.Valid;
@@ -55,5 +53,11 @@ public class AuthController {
     @PostMapping("/resend-otp")
     public ResponseEntity<String> resendOtp(@Valid @RequestBody ResendOtpDto resendOtpDto){
         return ResponseEntity.status(HttpStatus.OK).body(authService.resendOtp(resendOtpDto.getEmail()));
+    }
+
+    @PostMapping("/login")
+    public ResponseEntity<LoginResponseDto> login(@Valid @RequestBody LoginDto loginDto){
+        bhaskar.org.chat_application.dto.LoginResponseDto response = authService.login(loginDto);
+        return ResponseEntity.status(HttpStatus.OK).body(response);
     }
 }

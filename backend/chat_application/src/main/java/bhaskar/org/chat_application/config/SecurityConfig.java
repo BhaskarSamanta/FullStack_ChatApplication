@@ -17,14 +17,14 @@ public class SecurityConfig {
 
     @Bean
     public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
-
         http
                 .csrf(csrf -> csrf.disable())
                 .authorizeHttpRequests(auth -> auth
                         .requestMatchers(
                                 "/api/auth/signup",
                                 "/api/auth/verify-otp",
-                                "/api/auth/resend-otp"
+                                "/api/auth/resend-otp",
+                                "/api/auth/login"
                         ).permitAll()
                         .anyRequest().authenticated()
                 );

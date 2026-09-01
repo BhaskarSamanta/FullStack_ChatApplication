@@ -1,8 +1,9 @@
 package bhaskar.org.chat_application.service;
 
+import bhaskar.org.chat_application.dto.LoginDto;
+import bhaskar.org.chat_application.dto.LoginResponseDto;
 import bhaskar.org.chat_application.dto.SignupDto;
 import bhaskar.org.chat_application.dto.VerifyOtpDto;
-import bhaskar.org.chat_application.entities.OtpVerification;
 import bhaskar.org.chat_application.entities.Role;
 import bhaskar.org.chat_application.entities.User;
 import bhaskar.org.chat_application.repository.UserRepository;
@@ -20,6 +21,7 @@ public class AuthService {
     private final PasswordEncoder passwordEncoder;
     private final EmailService emailService;
     private final OtpService otpService;
+    private final JwtService jwtService;
 
     public String resendOtp(@NotBlank @Email String email) {
         User user = userRepository.findByEmail(email).orElse(null);
@@ -80,5 +82,32 @@ public class AuthService {
         userRepository.save(user);
         
         return result;
+    }
+
+    public LoginResponseDto login(LoginDto loginDto){
+        User user = userRepository
+                .findByEmail(loginDto.getEmail())
+                .orElse(null);
+
+        if(user == null) {
+            throw new RuntimeException("user with the given email doesnot exist");
+        }
+
+        if(!passwordEncoder.matches(
+                loginDto.getPassword(),
+                user.getPasswordHashed()
+        )){
+            throw new RuntimeException("Wrong Password");
+        }
+
+        if(!user.isVerified()){
+            throw new RuntimeException("Email not verified, please verify you email");
+        }
+        String token = jwtService.generateToken(user.getEmail());
+        return new LoginResponseDto(
+                "Login successful",
+                token,
+                "bearer"
+        );
     }
 }
