@@ -7,11 +7,8 @@ import java.util.TimeZone;
 
 @SpringBootApplication
 public class ChatApplication {
-
 	public static void main(String[] args) {
 		TimeZone.setDefault(TimeZone.getTimeZone("Asia/Kolkata"));
-
 		SpringApplication.run(ChatApplication.class, args);
 	}
-
 }

@@ -10,15 +10,15 @@ import org.hibernate.validator.constraints.Length;
 @Getter
 @Setter
 public class SignupDto {
-    @NotBlank
+    @NotBlank(message = "Username can not be blank")
     @Length(min = 6, max = 50, message = "Username must be between 6 and 50 characters")
     private String username;
 
-    @NotBlank
-    @Email
+    @NotBlank(message = "Email cannot be blank")
+    @Email(message = "Invalid email format")
     private String email;
 
-    @NotBlank
-    @Size(min = 8, max = 20, message = "Password must be between 8 and 20 characters")
+    @NotBlank(message = "Password cannot be blank")
+    @Size(min = 8, message = "Password must contain at least 8 characters")
     private String password;
 }

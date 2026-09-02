@@ -6,6 +6,9 @@ import bhaskar.org.chat_application.dto.SignupDto;
 import bhaskar.org.chat_application.dto.VerifyOtpDto;
 import bhaskar.org.chat_application.entities.Role;
 import bhaskar.org.chat_application.entities.User;
+import bhaskar.org.chat_application.exceptions.AlreadyExistsException;
+import bhaskar.org.chat_application.exceptions.EmailNotVerifiedException;
+import bhaskar.org.chat_application.exceptions.InvalidCredentialException;
 import bhaskar.org.chat_application.repository.UserRepository;
 import jakarta.transaction.Transactional;
 import jakarta.validation.constraints.Email;
@@ -40,11 +43,11 @@ public class AuthService {
 
         // check if user exists by email
         if(userRepository.existsByEmail(signupDto.getEmail())){
-            throw new RuntimeException("Email already exists");
+            throw new AlreadyExistsException("Email already exists");
         }
 
         if(userRepository.existsByUsername(signupDto.getUsername())){
-            throw new RuntimeException("Username already exists");
+            throw new AlreadyExistsException("Username already exists");
         }
 
         User user = User.builder()
@@ -90,18 +93,18 @@ public class AuthService {
                 .orElse(null);
 
         if(user == null) {
-            throw new RuntimeException("user with the given email doesnot exist");
+            throw new InvalidCredentialException("user with the given email doesnot exist");
         }
 
         if(!passwordEncoder.matches(
                 loginDto.getPassword(),
                 user.getPasswordHashed()
         )){
-            throw new RuntimeException("Wrong Password");
+            throw new InvalidCredentialException("Wrong Password");
         }
 
         if(!user.isVerified()){
-            throw new RuntimeException("Email not verified, please verify you email");
+            throw new EmailNotVerifiedException("Email not verified, please verify you email");
         }
         String token = jwtService.generateToken(user.getEmail());
         return new LoginResponseDto(
