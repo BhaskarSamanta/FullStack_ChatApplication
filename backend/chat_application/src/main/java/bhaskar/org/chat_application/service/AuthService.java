@@ -4,6 +4,7 @@ import bhaskar.org.chat_application.dto.LoginDto;
 import bhaskar.org.chat_application.dto.LoginResponseDto;
 import bhaskar.org.chat_application.dto.SignupDto;
 import bhaskar.org.chat_application.dto.VerifyOtpDto;
+import bhaskar.org.chat_application.entities.RefreshToken;
 import bhaskar.org.chat_application.entities.Role;
 import bhaskar.org.chat_application.entities.User;
 import bhaskar.org.chat_application.exceptions.AlreadyExistsException;
@@ -25,6 +26,7 @@ public class AuthService {
     private final EmailService emailService;
     private final OtpService otpService;
     private final JwtService jwtService;
+    private final RefreshTokenService refreshTokenService;
 
     public String resendOtp(@NotBlank @Email String email) {
         User user = userRepository.findByEmail(email).orElse(null);
@@ -107,10 +109,27 @@ public class AuthService {
             throw new EmailNotVerifiedException("Email not verified, please verify you email");
         }
         String token = jwtService.generateToken(user.getEmail());
+        String refreshToken = refreshTokenService.createRefreshToken(user);
         return new LoginResponseDto(
                 "Login successful",
                 token,
-                "bearer"
+                "bearer",
+                refreshToken
+        );
+    }
+
+    public LoginResponseDto refreshAccessToken(String token){
+        RefreshToken refreshToken = refreshTokenService.validateRefreshToken(token);
+
+        User user = refreshToken.getUser();
+
+        String newAccessToken = jwtService.generateToken(user.getEmail());
+
+        return new LoginResponseDto(
+                "Token refreshed successfully",
+                newAccessToken,
+                "bearer",
+                token
         );
     }
 }

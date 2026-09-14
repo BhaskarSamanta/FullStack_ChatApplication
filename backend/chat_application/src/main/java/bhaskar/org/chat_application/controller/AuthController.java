@@ -60,4 +60,11 @@ public class AuthController {
         bhaskar.org.chat_application.dto.LoginResponseDto response = authService.login(loginDto);
         return ResponseEntity.status(HttpStatus.OK).body(response);
     }
+
+    @PostMapping("/refresh")
+    public ResponseEntity<LoginResponseDto> refresh(@Valid @RequestBody RefreshTokenRequestDto request){
+        LoginResponseDto response = authService.refreshAccessToken(request.getRefreshToken());
+
+        return ResponseEntity.status(HttpStatus.OK).body(response);
+    }
 }
